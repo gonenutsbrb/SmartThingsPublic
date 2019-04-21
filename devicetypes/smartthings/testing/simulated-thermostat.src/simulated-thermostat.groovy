@@ -17,9 +17,9 @@ import groovy.transform.Field
 @Field final Map      MODE = [
     OFF:   "off",
     HEAT:  "heat",
-    AUTO:  "auto",
+//    AUTO:  "auto",
     COOL:  "cool",
-    EHEAT: "emergency heat"
+//    EHEAT: "emergency heat"
 ]
 
 @Field final Map      FAN_MODE = [
