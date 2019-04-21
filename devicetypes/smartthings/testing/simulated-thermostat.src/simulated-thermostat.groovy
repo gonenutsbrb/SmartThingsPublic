@@ -83,13 +83,21 @@ import groovy.transform.Field
 metadata {
     // Automatically generated. Make future change here.
     definition (name: "Simulated Thermostat", namespace: "smartthings/testing", author: "SmartThings") {
+        capability "Sensor"
         capability "Actuator"
         capability "Health Check"
 
         capability "Thermostat"
+        capability "Relative Humidity Measurement"
         capability "Configuration"
         capability "Refresh"
-        
+
+        command "tempUp"
+        command "tempDown"
+        command "heatUp"
+        command "heatDown"
+        command "coolUp"
+        command "coolDown"
         command "setpointUp"
         command "setpointDown"
 
@@ -97,30 +105,28 @@ metadata {
         command "cycleFanMode"
 
         command "setTemperature", ["number"]
+        command "setHumidityPercent", ["number"]
         command "delayedEvaluate"
-
-        command "markDeviceOnline"
-        command "markDeviceOffline"
+        command "runSimHvacCycle"
     }
 
     tiles(scale: 2) {
-        multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:6, height:4calc) {
+        multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:6, height:4) {
             tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-                attributeState("temp", label:'${currentValue}°', unit:"°F", defaultState: true)
+                attributeState("default", label:'${currentValue} °F', unit:"°F")
             }
             tileAttribute("device.temperature", key: "VALUE_CONTROL") {
                 attributeState("VALUE_UP", action: "setpointUp")
                 attributeState("VALUE_DOWN", action: "setpointDown")
             }
             tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
-                attributeState("humidity", label: '${currentValue}%', unit: "%", defaultState: true)
+                attributeState("default", label: '${currentValue}% Hum', unit: "%", icon: "st.Weather.weather12")
             }
             tileAttribute("device.thermostatOperatingState", key: "OPERATING_STATE") {
                 attributeState("idle", backgroundColor: "#FFFFFF")
                 attributeState("heating", backgroundColor: "#E86D13")
                 attributeState("cooling", backgroundColor: "#00A0DC")
             }
-  
             tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
                 attributeState("off",  label: '${name}')
                 attributeState("heat", label: '${name}')
@@ -128,7 +134,12 @@ metadata {
                 attributeState("auto", label: '${name}')
                 attributeState("emergency heat", label: 'e-heat')
             }
-
+            tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
+                attributeState("default", label: '${currentValue}', unit: "°F")
+            }
+            tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
+                attributeState("default", label: '${currentValue}', unit: "°F")
+            }
         }
 
         standardTile("mode", "device.thermostatMode", width: 2, height: 2, decoration: "flat") {
@@ -144,12 +155,12 @@ metadata {
             state "off",       action: "cycleFanMode", nextState: "updating", icon: "st.thermostat.fan-off", backgroundColor: "#CCCCCC", defaultState: true
             state "auto",      action: "cycleFanMode", nextState: "updating", icon: "st.thermostat.fan-auto"
             state "on",        action: "cycleFanMode", nextState: "updating", icon: "st.thermostat.fan-on"
-            state "circulate", action: "cycleFanMode", nextState: "updating", icon: "st.thermostat.fan-circulate"
+            state "circulate", action: "cycleFanMode", nextState: "updating", icon: "st.thermostat.fan-circulate" 
             state "updating", label: "Working"
         }
-        
+
         valueTile("heatingSetpoint", "device.heatingSetpoint", width: 2, height: 2, decoration: "flat") {
-            state "heat", label:'Heat\n${currentValue}°', unit: "°F", backgroundColor:"#E86D13"
+            state "heat", label:'Heat\n${currentValue} °F', unit: "°F", backgroundColor:"#E86D13"
         }
         standardTile("heatDown", "device.temperature", width: 1, height: 1, decoration: "flat") {
             state "default", label: "heat", action: "heatDown", icon: "st.thermostat.thermostat-down"
@@ -159,7 +170,7 @@ metadata {
         }
 
         valueTile("coolingSetpoint", "device.coolingSetpoint", width: 2, height: 2, decoration: "flat") {
-            state "cool", label: 'Cool\n${currentValue}°', unit: "°F", backgroundColor: "#00A0DC"
+            state "cool", label: 'Cool\n${currentValue} °F', unit: "°F", backgroundColor: "#00A0DC"
         }
         standardTile("coolDown", "device.temperature", width: 1, height: 1, decoration: "flat") {
             state "default", label: "cool", action: "coolDown", icon: "st.thermostat.thermostat-down"
@@ -168,8 +179,8 @@ metadata {
             state "default", label: "cool", action: "coolUp", icon: "st.thermostat.thermostat-up"
         }
 
-        valueTile("roomTemp", "device.temperature", width: 2, height: 1, decoration: "flat") {
-            state "default", label:'${currentValue}°', unit: "°F", backgroundColors: [
+        valueTile("roomTemp", "device.temperature", width: 2, height: 2, decoration: "flat") {
+            state "default", label:'${currentValue} °F', unit: "°F", backgroundColors: [
                 // Celsius Color Range
                 [value:  0, color: "#153591"],
                 [value:  7, color: "#1E9CBB"],
@@ -207,90 +218,52 @@ metadata {
             state "default", label: ""
         }
 
-        valueTile("humiditySliderLabel", "device.humidity", width: 3, height: 1, decoration: "flat") {
-            state "default", label: 'Simulated Humidity: ${currentValue}%'
-        }
-
-        controlTile("humiditySlider", "device.humidity", "slider", width: 1, height: 1, range: "(0..100)") {
-            state "humidity", action: "setHumidityPercent"
-        }
-
-        standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "default", label: "", action: "refresh", icon: "st.secondary.refresh"
-        }
-
-        valueTile("reset", "device.switch", width: 2, height: 2, decoration: "flat") {
+        valueTile("reset", "device.switch", width: 4, height: 1, decoration: "flat") {
             state "default", label: "Reset to Defaults", action: "configure"
         }
 
-        standardTile("deviceHealthControl", "device.healthStatus", decoration: "flat", width: 2, height: 2, inactiveLabel: false) {
-            state "online",  label: "ONLINE", backgroundColor: "#00A0DC", action: "markDeviceOffline", icon: "st.Health & Wellness.health9", nextState: "goingOffline", defaultState: true
-            state "offline", label: "OFFLINE", backgroundColor: "#E86D13", action: "markDeviceOnline", icon: "st.Health & Wellness.health9", nextState: "goingOnline"
-            state "goingOnline", label: "Going ONLINE", backgroundColor: "#FFFFFF", icon: "st.Health & Wellness.health9"
-            state "goingOffline", label: "Going OFFLINE", backgroundColor: "#FFFFFF", icon: "st.Health & Wellness.health9"
+        valueTile("humiditySliderLabel", "device.humidity", width: 4, height: 1, decoration: "flat") {
+            state "default", label: 'Simulated Humidity: ${currentValue}%'
+        }
+
+        controlTile("humiditySlider", "device.humidity", "slider", width: 4, height: 1, range: "(0..100)") {
+            state "humidity", action: "setHumidityPercent"
         }
 
         main("roomTemp")
         details(["thermostatMulti",
             "heatDown", "heatUp",
-            "mode",
+            "mode", 
             "coolDown", "coolUp",
             "heatingSetpoint",
             "coolingSetpoint",
             "fanMode",
             "blank2x1", "blank2x1",
-            "deviceHealthControl", "refresh", "reset",
             "blank1x1", "simControlLabel", "blank1x1",
-            "tempDown", "tempUp", "humiditySliderLabel", "humiditySlider",
-            "roomTemp"
+            "tempDown", "tempUp", "humiditySliderLabel",
+            "roomTemp", "humiditySlider",
+            "reset"
         ])
     }
 }
 
 def installed() {
     log.trace "Executing 'installed'"
-    configure()
-    done()
-}
-
-def updated() {
-    log.trace "Executing 'updated'"
     initialize()
     done()
 }
 
 def configure() {
     log.trace "Executing 'configure'"
-    // this would be for a physical device when it gets a handler assigned to it
-
-    // for HealthCheck
-    sendEvent(name: "DeviceWatch-Enroll", value: [protocol: "cloud", scheme:"untracked"].encodeAsJson(), displayed: false)
-    markDeviceOnline()
-
     initialize()
     done()
 }
 
-def markDeviceOnline() {
-    setDeviceHealth("online")
-}
-
-def markDeviceOffline() {
-    setDeviceHealth("offline")
-}
-
-private setDeviceHealth(String healthState) {
-    log.debug("healthStatus: ${device.currentValue('healthStatus')}; DeviceWatch-DeviceStatus: ${device.currentValue('DeviceWatch-DeviceStatus')}")
-    // ensure healthState is valid
-    List validHealthStates = ["online", "offline"]
-    healthState = validHealthStates.contains(healthState) ? healthState : device.currentValue("healthStatus")
-    // set the healthState
-    sendEvent(name: "DeviceWatch-DeviceStatus", value: healthState)
-    sendEvent(name: "healthStatus", value: healthState)
-}
-
 private initialize() {
     log.trace "Executing 'initialize'"
+
+    // for HealthCheck
+    sendEvent(name: "checkInterval", value: 12 * 60, displayed: false, data: [protocol: "cloud", scheme: "untracked"])
 
     sendEvent(name: "temperature", value: DEFAULT_TEMPERATURE, unit: "°F")
     sendEvent(name: "humidity", value: DEFAULT_HUMIDITY, unit: "%")
@@ -311,6 +284,7 @@ private initialize() {
     unschedule()
 }
 
+
 // parse events into attributes
 def parse(String description) {
     log.trace "Executing parse $description"
@@ -327,6 +301,13 @@ def parse(String description) {
     }
     done()
     return parsedEvents
+}
+
+
+def ping() {
+    log.trace "Executing ping"
+    refresh()
+    // done() called by refresh()
 }
 
 def refresh() {
@@ -540,7 +521,7 @@ private Integer getTemperature() {
 private setTemperature(newTemp) {
     sendEvent(name:"temperature", value: newTemp)
     evaluateOperatingState(temperature: newTemp)
-}
+} 
 
 private tempUp() {
     def newTemp = getTemperature() ? getTemperature() + 1 : DEFAULT_TEMPERATURE
@@ -555,7 +536,7 @@ private tempDown() {
 private setHumidityPercent(Integer humidityValue) {
     log.trace "Executing 'setHumidityPercent' to $humidityValue"
     Integer curHum = device.currentValue("humidity") as Integer
-    if (humidityValue != null) {
+    if (humidityValue != null) { 
         Integer hum = boundInt(humidityValue, (0..100))
         if (hum != humidityValue) {
             log.warn "Corrrected humidity value to $hum"
@@ -598,14 +579,14 @@ private proposeSetpoints(Integer heatSetpoint, Integer coolSetpoint, String prio
     String mode = getThermostatMode()
     Integer proposedHeatSetpoint = heatSetpoint?:getHeatingSetpoint()
     Integer proposedCoolSetpoint = coolSetpoint?:getCoolingSetpoint()
-    if (coolSetpoint == null) {
+    if (coolSetpoint == null) { 
         prioritySetpointType = SETPOINT_TYPE.HEATING
     } else if (heatSetpoint == null) {
         prioritySetpointType = SETPOINT_TYPE.COOLING
     } else if (prioritySetpointType == null) {
         prioritySetpointType = DEFAULT_SETPOINT_TYPE
     } else {
-        // we use what was passed as the arg.
+        // we use what was passed as the arg. 
     }
 
     if (mode in HEAT_ONLY_MODES) {
@@ -640,14 +621,14 @@ private proposeSetpoints(Integer heatSetpoint, Integer coolSetpoint, String prio
     }
     if (newCoolSetpoint != null) {
         log.info "set cooling setpoint of $newCoolSetpoint"
-        sendEvent(name: "coolingSetpoint", value: newCoolSetpoint, unit: "F")
+        sendEvent(name: "coolingSetpoint", value: newCoolSetpoint, unit: "F")		
     }
 }
 
 // sets the thermostat setpoint and operating state and starts the "HVAC" or lets it end.
 private evaluateOperatingState(Map overrides) {
     // check for override values, otherwise use current state values
-    Integer currentTemp = overrides.find { key, value ->
+    Integer currentTemp = overrides.find { key, value -> 
             "$key".toLowerCase().startsWith("curr")|"$key".toLowerCase().startsWith("temp")
         }?.value?:getTemperature() as Integer
     Integer heatingSetpoint = overrides.find { key, value -> "$key".toLowerCase().startsWith("heat") }?.value?:getHeatingSetpoint() as Integer
@@ -666,7 +647,7 @@ private evaluateOperatingState(Map overrides) {
         if (heatingSetpoint - currentTemp >= THRESHOLD_DEGREES) {
             isHeating = true
             setOperatingState(OP_STATE.HEATING)
-        }
+        } 
         sendEvent(name: "thermostatSetpoint", value: heatingSetpoint)
     }
     if (tsMode in COOL_ONLY_MODES + DUAL_SETPOINT_MODES && !isHeating) {
@@ -702,11 +683,11 @@ private startSimHvac() {
     } else if (isRunning) {
         log.trace "simulated hvac is already running"
     } else if (!shouldBeRunning) {
-        log.trace "simulated hvac does not need to run now"
+        log.trace "simulated hvac does not need to run now"		
     }
 }
 
-def runSimHvacCycle() {
+private runSimHvacCycle() {
     def operatingState = getOperatingState()
     def currentTemp = getTemperature()
     def heatSet = getHeatingSetpoint()
