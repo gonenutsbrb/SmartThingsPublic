@@ -120,7 +120,7 @@ metadata {
                 attributeState("heating", backgroundColor: "#E86D13")
                 attributeState("cooling", backgroundColor: "#00A0DC")
             }
-/*  
+  
             tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
                 attributeState("off",  label: '${name}')
                 attributeState("heat", label: '${name}')
@@ -128,10 +128,9 @@ metadata {
                 attributeState("auto", label: '${name}')
                 attributeState("emergency heat", label: 'e-heat')
             }
-*/
+
         }
 
-/*
         standardTile("mode", "device.thermostatMode", width: 2, height: 2, decoration: "flat") {
             state "off",            action: "cycleMode", nextState: "updating", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#CCCCCC", defaultState: true
             state "heat",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.heat"
@@ -158,7 +157,6 @@ metadata {
         standardTile("heatUp", "device.temperature", width: 1, height: 1, decoration: "flat") {
             state "default", label: "heat", action: "heatUp", icon: "st.thermostat.thermostat-up"
         }
-*/
 
         valueTile("coolingSetpoint", "device.coolingSetpoint", width: 2, height: 2, decoration: "flat") {
             state "cool", label: 'Cool\n${currentValue}°', unit: "°F", backgroundColor: "#00A0DC"
