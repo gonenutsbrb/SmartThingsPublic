@@ -50,7 +50,7 @@ import groovy.transform.Field
 @Field final List RUNNING_OP_STATES = [OP_STATE.HEATING, OP_STATE.COOLING]
 
 // config - TODO: move these to a pref page
-@Field List SUPPORTED_MODES = [MODE.OFF, MODE.HEAT, MODE.AUTO, MODE.COOL, MODE.EHEAT]
+@Field List SUPPORTED_MODES = [MODE.OFF, MODE.HEAT, MODE.COOL]
 @Field List SUPPORTED_FAN_MODES = [FAN_MODE.OFF, FAN_MODE.AUTO, FAN_MODE.ON]
 
 @Field final Float    THRESHOLD_DEGREES = 1.0
