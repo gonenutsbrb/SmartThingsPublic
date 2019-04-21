@@ -104,7 +104,7 @@ metadata {
     }
 
     tiles(scale: 2) {
-        multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:6, height:4) {
+        multiAttributeTile(name:"thermostatMulti", type:"thermostat", width:6, height:4calc) {
             tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
                 attributeState("temp", label:'${currentValue}°', unit:"°F", defaultState: true)
             }
@@ -128,10 +128,11 @@ metadata {
                 attributeState("auto", label: '${name}')
                 attributeState("emergency heat", label: 'e-heat')
             }
-        }
 */
+        }
 
-/*        standardTile("mode", "device.thermostatMode", width: 2, height: 2, decoration: "flat") {
+/*
+        standardTile("mode", "device.thermostatMode", width: 2, height: 2, decoration: "flat") {
             state "off",            action: "cycleMode", nextState: "updating", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#CCCCCC", defaultState: true
             state "heat",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.heat"
             state "cool",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.cool"
@@ -147,9 +148,8 @@ metadata {
             state "circulate", action: "cycleFanMode", nextState: "updating", icon: "st.thermostat.fan-circulate"
             state "updating", label: "Working"
         }
-*/
-
-/*        valueTile("heatingSetpoint", "device.heatingSetpoint", width: 2, height: 2, decoration: "flat") {
+        
+        valueTile("heatingSetpoint", "device.heatingSetpoint", width: 2, height: 2, decoration: "flat") {
             state "heat", label:'Heat\n${currentValue}°', unit: "°F", backgroundColor:"#E86D13"
         }
         standardTile("heatDown", "device.temperature", width: 1, height: 1, decoration: "flat") {
