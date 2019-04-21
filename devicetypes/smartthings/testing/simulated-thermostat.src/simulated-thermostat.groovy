@@ -18,7 +18,7 @@ import groovy.transform.Field
     OFF:   "off",
     HEAT:  "heat",
 //    AUTO:  "auto",
-    COOL:  "cool",
+    COOL:  "cool"
 //    EHEAT: "emergency heat"
 ]
 
