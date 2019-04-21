@@ -146,8 +146,8 @@ metadata {
             state "off",            action: "cycleMode", nextState: "updating", icon: "st.thermostat.heating-cooling-off", backgroundColor: "#CCCCCC", defaultState: true
             state "heat",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.heat"
             state "cool",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.cool"
-            state "auto",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.auto"
-            state "emergency heat", action: "cycleMode", nextState: "updating", icon: "st.thermostat.emergency-heat"
+            //state "auto",           action: "cycleMode", nextState: "updating", icon: "st.thermostat.auto"
+            //state "emergency heat", action: "cycleMode", nextState: "updating", icon: "st.thermostat.emergency-heat"
             state "updating", label: "Working"
         }
 
