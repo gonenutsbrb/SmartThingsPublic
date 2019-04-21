@@ -131,8 +131,8 @@ metadata {
                 attributeState("off",  label: '${name}')
                 attributeState("heat", label: '${name}')
                 attributeState("cool", label: '${name}')
-                attributeState("auto", label: '${name}')
-                attributeState("emergency heat", label: 'e-heat')
+                //attributeState("auto", label: '${name}')
+                //attributeState("emergency heat", label: 'e-heat')
             }
             tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
                 attributeState("default", label: '${currentValue}', unit: "°F")
